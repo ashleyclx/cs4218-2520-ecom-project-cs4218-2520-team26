@@ -327,9 +327,11 @@ describe("authController - Profile and Orders", () => {
 
             // Assert
             expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.send).toHaveBeenCalledWith(
-                expect.objectContaining({ success: false, message: "Error While Updating Order" })
-            );
+            expect(res.send).toHaveBeenCalledWith({
+                success: false,
+                message: "Error While Updating Order",
+                error: new Error("Database error"),
+            });
         });
 
         it("should handle missing orderId", async () => {
@@ -342,6 +344,11 @@ describe("authController - Profile and Orders", () => {
             await orderStatusController(req, res);
 
             // Assert
+            expect(orderModel.findByIdAndUpdate).toHaveBeenCalledWith(
+                "",
+                { status: "Shipped" },
+                { new: true }
+            );
             expect(res.json).toHaveBeenCalledWith(null);
         });
     });
