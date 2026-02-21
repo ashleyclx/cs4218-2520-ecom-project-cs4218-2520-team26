@@ -18,7 +18,6 @@ const createMockResponse = () => {
     status: jest.fn(),
     send: jest.fn(),
   };
-  // allow chaining: res.status(200).send(...)
   res.status.mockReturnValue(res);
   return res;
 };

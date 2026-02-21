@@ -22,6 +22,7 @@ describe("useCategory", () => {
   });
 
   it("fetches categories and updates state on mount", async () => {
+    // Arrange
     const mockCategories = [
       { _id: "cat1", name: "Category 1" },
       { _id: "cat2", name: "Category 2" },
@@ -33,8 +34,10 @@ describe("useCategory", () => {
 
     const handleCategories = jest.fn();
 
+    // Act
     render(<TestComponent onCategories={handleCategories} />);
 
+    // Assert
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalledWith(
         "/api/v1/category/get-category"
@@ -47,14 +50,17 @@ describe("useCategory", () => {
   });
 
   it("logs an error when fetching categories fails and leaves categories empty", async () => {
+    // Arrange
     const error = new Error("network error");
     axios.get.mockRejectedValueOnce(error);
 
     const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
     const handleCategories = jest.fn();
 
+    // Act
     render(<TestComponent onCategories={handleCategories} />);
 
+    // Assert
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalledWith(
         "/api/v1/category/get-category"
@@ -62,7 +68,6 @@ describe("useCategory", () => {
     );
 
     expect(consoleSpy).toHaveBeenCalled();
-    // categories should remain as initial empty array
     expect(handleCategories).toHaveBeenLastCalledWith([]);
 
     consoleSpy.mockRestore();

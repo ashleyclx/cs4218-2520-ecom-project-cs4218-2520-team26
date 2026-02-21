@@ -3,20 +3,19 @@ import { render, screen } from "@testing-library/react";
 import Categories from "./Categories";
 
 // Earnest Suprapmo, A0251966U
-// Mock the useCategory hook so we can fully control its output
+// Mock UseCategory
 const mockUseCategory = jest.fn();
 jest.mock("../hooks/useCategory", () => ({
   __esModule: true,
   default: () => mockUseCategory(),
 }));
 
-// Simplify Layout to avoid pulling in Header/Footer and router dependencies
 jest.mock("../components/Layout", () => ({
   __esModule: true,
   default: ({ children }) => <div data-testid="layout">{children}</div>,
 }));
 
-// Mock Link so we do not need an actual Router and can assert hrefs
+// mock react-router-dom
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   Link: ({ to, children, ...rest }) => (

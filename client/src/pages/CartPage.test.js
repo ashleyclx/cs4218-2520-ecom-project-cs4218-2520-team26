@@ -14,7 +14,7 @@ import CartPage from "./CartPage";
 jest.mock("axios");
 jest.mock("react-hot-toast");
 
-// Mock cart and auth context hooks so we can fully control state
+// Mock cart
 const mockUseCart = jest.fn();
 jest.mock("../context/cart", () => ({
   useCart: () => mockUseCart(),
@@ -25,14 +25,14 @@ jest.mock("../context/auth", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-// Mock react-router navigate
+// Mock react-router-dom
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
 }));
 
-// Mock Braintree DropIn component and expose a shared instance mock
+// Mock Braintree DropIn component
 const mockDropInInstance = {
   requestPaymentMethod: jest.fn(),
 };
@@ -49,18 +49,17 @@ jest.mock("braintree-web-drop-in-react", () => {
   };
 });
 
-// Mock icons to avoid unnecessary React warnings
+// Mock icons
 jest.mock("react-icons/ai", () => ({
   AiFillWarning: () => <span>warning-icon</span>,
 }));
 
-// Simplify Layout to avoid pulling in Header/Footer and router-dependent components
 jest.mock("../components/Layout", () => ({
   __esModule: true,
   default: ({ children }) => <div>{children}</div>,
 }));
 
-// Minimal localStorage mock for cart operations
+// mock localStorage
 const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
@@ -178,7 +177,6 @@ describe("CartPage", () => {
 
     render(<CartPage />);
 
-    // wait for initial token fetch/useEffect to settle
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalledWith(
         "/api/v1/product/braintree/token"
@@ -282,7 +280,7 @@ describe("CartPage", () => {
       name: /make payment/i,
     });
 
-    // Act – wrap click + async chain in act
+    // Act
     await act(async () => {
       fireEvent.click(makePaymentButton);
     });
@@ -355,7 +353,6 @@ describe("CartPage", () => {
     // Act
     render(<CartPage />);
 
-    // wait for initial token fetch/useEffect to settle
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalledWith(
         "/api/v1/product/braintree/token"
@@ -427,5 +424,29 @@ describe("CartPage", () => {
     });
     fireEvent.click(updateAddressButton);
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
+  });
+
+  it("shows empty cart message when there are no items", async () => {
+    // Arrange
+    const auth = { user: { name: "John Doe" }, token: "test-token" };
+    const setAuth = jest.fn();
+    const cart = [];
+    const setCart = jest.fn();
+
+    mockUseAuth.mockReturnValue([auth, setAuth]);
+    mockUseCart.mockReturnValue([cart, setCart]);
+
+    // Act
+    render(<CartPage />);
+
+    // Assert
+    await waitFor(() =>
+      expect(axios.get).toHaveBeenCalledWith(
+        "/api/v1/product/braintree/token"
+      )
+    );
+    expect(
+      screen.getByText(/Your Cart Is Empty/i)
+    ).toBeInTheDocument();
   });
 });

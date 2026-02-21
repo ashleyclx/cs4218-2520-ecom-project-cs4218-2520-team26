@@ -116,6 +116,7 @@ describe("HomePage", () => {
 
   it("handles error when fetching categories", async () => {
     await withConsoleSpy(async (consoleSpy) => {
+      // Arrange
       axios.get.mockImplementation((url) => {
         if (url === "/api/v1/category/get-category") {
           return Promise.reject(new Error("category error"));
@@ -129,8 +130,10 @@ describe("HomePage", () => {
         return Promise.resolve({ data: {} });
       });
 
+      // Act
       render(<HomePage />);
 
+      // Assert
       await waitFor(() =>
         expect(axios.get).toHaveBeenCalledWith(
           "/api/v1/product/product-count"
@@ -143,6 +146,7 @@ describe("HomePage", () => {
 
   it("handles error when fetching product list on initial load", async () => {
     await withConsoleSpy(async (consoleSpy) => {
+      // Arrange
       axios.get.mockImplementation((url) => {
         if (url === "/api/v1/category/get-category") {
           return Promise.resolve({
@@ -158,8 +162,10 @@ describe("HomePage", () => {
         return Promise.resolve({ data: {} });
       });
 
+      // Act
       render(<HomePage />);
 
+      // Assert
       await waitFor(() =>
         expect(axios.get).toHaveBeenCalledWith(
           "/api/v1/product/product-list/1"
@@ -170,8 +176,39 @@ describe("HomePage", () => {
     });
   });
 
+  it("does not render categories when category fetch is not successful", async () => {
+    // Arrange
+    axios.get.mockImplementation((url) => {
+      if (url === "/api/v1/category/get-category") {
+        return Promise.resolve({
+          data: { success: false, category: mockCategories },
+        });
+      }
+      if (url === "/api/v1/product/product-count") {
+        return Promise.resolve({ data: { total: 2 } });
+      }
+      if (url.startsWith("/api/v1/product/product-list/")) {
+        return Promise.resolve({ data: { products: mockProductsPage1 } });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
+    // Act
+    render(<HomePage />);
+
+    // Assert
+    await waitFor(() =>
+      expect(axios.get).toHaveBeenCalledWith(
+        "/api/v1/category/get-category"
+      )
+    );
+    expect(screen.getByText("Filter By Category")).toBeInTheDocument();
+    expect(screen.queryByText("Category 1")).toBeNull();
+  });
+
   it("handles error when fetching total product count", async () => {
     await withConsoleSpy(async (consoleSpy) => {
+      // Arrange
       axios.get.mockImplementation((url) => {
         if (url === "/api/v1/category/get-category") {
           return Promise.resolve({
@@ -187,8 +224,10 @@ describe("HomePage", () => {
         return Promise.resolve({ data: {} });
       });
 
+      // Act
       render(<HomePage />);
 
+      // Assert
       await waitFor(() =>
         expect(axios.get).toHaveBeenCalledWith(
           "/api/v1/product/product-count"
@@ -200,8 +239,13 @@ describe("HomePage", () => {
   });
 
   it("renders categories and products after fetching data", async () => {
+    // Arrange
+    // (default axios mocks in beforeEach)
+
+    // Act
     render(<HomePage />);
 
+    // Assert
     await waitFor(() => {
       expect(screen.getByText("Filter By Category")).toBeInTheDocument();
       expect(screen.getByText("Category 1")).toBeInTheDocument();
@@ -212,8 +256,10 @@ describe("HomePage", () => {
   });
 
   it('adds a product to cart when "ADD TO CART" is clicked', async () => {
+    // Arrange
     render(<HomePage />);
 
+    // Act
     await waitFor(() =>
       expect(screen.getByText("Product 1")).toBeInTheDocument()
     );
@@ -223,6 +269,7 @@ describe("HomePage", () => {
     });
     fireEvent.click(addToCartButton);
 
+    // Assert
     expect(mockSetCart).toHaveBeenCalledTimes(1);
     expect(window.localStorage.setItem).toHaveBeenCalledWith(
       "cart",
@@ -232,8 +279,10 @@ describe("HomePage", () => {
   });
 
   it('navigates to product details when "More Details" is clicked', async () => {
+    // Arrange
     render(<HomePage />);
 
+    // Act
     await waitFor(() =>
       expect(screen.getByText("Product 1")).toBeInTheDocument()
     );
@@ -243,12 +292,15 @@ describe("HomePage", () => {
     });
     fireEvent.click(moreDetailsButton);
 
+    // Assert
     expect(mockNavigate).toHaveBeenCalledWith("/product/product-1");
   });
 
   it("loads more products when Loadmore button is clicked", async () => {
+    // Arrange
     render(<HomePage />);
 
+    // Act
     await waitFor(() =>
       expect(screen.getByText("Product 1")).toBeInTheDocument()
     );
@@ -256,6 +308,7 @@ describe("HomePage", () => {
     const loadMoreButton = screen.getByRole("button", { name: /loadmore/i });
     fireEvent.click(loadMoreButton);
 
+    // Assert
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalledWith(
         "/api/v1/product/product-list/2"
@@ -268,6 +321,7 @@ describe("HomePage", () => {
 
   it("handles error when loading more products", async () => {
     await withConsoleSpy(async (consoleSpy) => {
+      // Arrange
       axios.get.mockImplementation((url) => {
         if (url === "/api/v1/category/get-category") {
           return Promise.resolve({
@@ -286,6 +340,7 @@ describe("HomePage", () => {
         return Promise.resolve({ data: {} });
       });
 
+      // Act
       render(<HomePage />);
 
       await waitFor(() =>
@@ -295,6 +350,7 @@ describe("HomePage", () => {
       const loadMoreButton = screen.getByRole("button", { name: /loadmore/i });
       fireEvent.click(loadMoreButton);
 
+      // Assert
       await waitFor(() =>
         expect(axios.get).toHaveBeenCalledWith(
           "/api/v1/product/product-list/2"
@@ -306,6 +362,7 @@ describe("HomePage", () => {
   });
 
   it("removes category from filter when unchecked", async () => {
+    // Arrange
     render(<HomePage />);
 
     await waitFor(() =>
@@ -318,6 +375,7 @@ describe("HomePage", () => {
     fireEvent.click(categoryCheckbox);
     fireEvent.click(categoryCheckbox);
 
+    // Assert
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalledWith(
         "/api/v1/product/product-list/1"
@@ -327,6 +385,7 @@ describe("HomePage", () => {
 
   it("handles error when filtering products", async () => {
     await withConsoleSpy(async (consoleSpy) => {
+      // Arrange
       axios.post.mockImplementation((url, body) => {
         if (url === "/api/v1/product/product-filters") {
           return Promise.reject(new Error("filter error"));
@@ -334,6 +393,7 @@ describe("HomePage", () => {
         return Promise.resolve({ data: { products: [] } });
       });
 
+      // Act
       render(<HomePage />);
 
       await waitFor(() =>
@@ -342,6 +402,7 @@ describe("HomePage", () => {
 
       fireEvent.click(screen.getByText("Category 1"));
 
+      // Assert
       await waitFor(() =>
         expect(axios.post).toHaveBeenCalledWith(
           "/api/v1/product/product-filters",
@@ -357,6 +418,7 @@ describe("HomePage", () => {
   });
 
   it("filters products when a price range is selected", async () => {
+    // Arrange
     render(<HomePage />);
 
     await waitFor(() =>
@@ -366,6 +428,7 @@ describe("HomePage", () => {
     const priceOption = screen.getByText("Below $50");
     fireEvent.click(priceOption);
 
+    // Assert
     await waitFor(() =>
       expect(axios.post).toHaveBeenCalledWith(
         "/api/v1/product/product-filters",
@@ -377,7 +440,38 @@ describe("HomePage", () => {
     );
   });
 
+  it("filters products when both category and price are selected", async () => {
+    // Arrange
+    render(<HomePage />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Category 1")).toBeInTheDocument()
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Below $50")).toBeInTheDocument()
+    );
+
+    const categoryCheckbox = screen.getByText("Category 1");
+    const priceOption = screen.getByText("Below $50");
+
+    // Act
+    fireEvent.click(categoryCheckbox);
+    fireEvent.click(priceOption);
+
+    // Assert
+    await waitFor(() =>
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/product-filters",
+        {
+          checked: ["cat1"],
+          radio: [0, 50],
+        }
+      )
+    );
+  });
+
   it("reloads the page when RESET FILTERS is clicked", async () => {
+    // Arrange
     render(<HomePage />);
 
     await waitFor(() =>
@@ -390,8 +484,10 @@ describe("HomePage", () => {
     delete window.location;
     window.location = { reload: reloadMock };
 
+    // Act
     fireEvent.click(screen.getByText("RESET FILTERS"));
 
+    // Assert
     expect(reloadMock).toHaveBeenCalled();
 
     window.location = originalLocation;
