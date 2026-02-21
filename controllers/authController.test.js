@@ -89,20 +89,55 @@ describe("authController - Profile and Orders", () => {
             });
         });
 
-        it("should return error when password is less than 6 characters", async () => {
-            // Arrange
-            req.body = { password: "short", name: "John" };
-            const mockUser = { name: "John", password: "oldpass", phone: "123", address: "addr" };
-            userModel.findById.mockResolvedValue(mockUser);
+        describe("update passwords of different lengths", () => {
+            it("should return error when password is less than 6 characters (BV: 5)", async () => {
+                // Arrange
+                req.body = { password: "five1", name: "John" };
+                const mockUser = { name: "John", password: "oldpass", phone: "123", address: "addr" };
+                userModel.findById.mockResolvedValue(mockUser);
 
-            // Act
-            await updateProfileController(req, res);
+                // Act
+                await updateProfileController(req, res);
 
-            // Assert
-            expect(res.json).toHaveBeenCalledWith(
-                { error: "Passsword is required and 6 character long" }
-            );
-        });
+                // Assert
+                expect(res.json).toHaveBeenCalledWith(
+                    { error: "Passsword is required to be at least 6 characters long" }
+                );
+            });
+
+            it("should accept password of exactly 6 characters (BV: 6)", async () => {
+                // Arrange
+                req.body = { password: "six123" };
+                const mockUser = { name: "John", password: "oldpass", phone: "123", address: "addr" };
+                userModel.findById.mockResolvedValue(mockUser);
+                hashPassword.mockResolvedValue("hashedpass");
+                userModel.findByIdAndUpdate.mockResolvedValue({ ...mockUser, password: "hashedpass" });
+
+                // Act
+                await updateProfileController(req, res);
+
+                // Assert
+                expect(hashPassword).toHaveBeenCalledWith("six123");
+                expect(res.status).toHaveBeenCalledWith(200);
+            });
+
+            it("should accept password of more than 6 characters (BV: 7)", async () => {
+                // Arrange
+                req.body = { password: "seven12" };
+                const mockUser = { name: "John", password: "oldpass", phone: "123", address: "addr" };
+                userModel.findById.mockResolvedValue(mockUser);
+                hashPassword.mockResolvedValue("hashedpass");
+                userModel.findByIdAndUpdate.mockResolvedValue({ ...mockUser, password: "hashedpass" });
+
+                // Act
+                await updateProfileController(req, res);
+
+                // Assert
+                expect(hashPassword).toHaveBeenCalledWith("seven12");
+                expect(res.status).toHaveBeenCalledWith(200);
+            });
+        })
+        
 
         it("should handle errors during update", async () => {
             // Arrange
@@ -328,22 +363,29 @@ describe("authController - Profile and Orders", () => {
         });
 
         it("should handle different status values", async () => {
-            // Arrange
-            req.params = { orderId: "order123" };
-            req.body = { status: "Delivered" };
-            const mockUpdatedOrder = { _id: "order123", status: "Delivered", buyer: "user123" };
-            orderModel.findByIdAndUpdate.mockResolvedValue(mockUpdatedOrder);
+            const validStatuses = ["Not Processed", "Processing", "Shipped", "Delivered", "Cancelled"];
 
-            // Act
-            await orderStatusController(req, res);
+            for (const status of validStatuses) {
+                // Arrange
+                req.params = { orderId: "order123" };
+                req.body = { status };
+                const mockUpdatedOrder = { _id: "order123", status, buyer: "user123" };
+                orderModel.findByIdAndUpdate.mockResolvedValue(mockUpdatedOrder);
 
-            // Assert
-            expect(orderModel.findByIdAndUpdate).toHaveBeenCalledWith(
-                "order123",
-                { status: "Delivered" },
-                { new: true }
-            );
-            expect(res.json).toHaveBeenCalledWith(mockUpdatedOrder);
+                // Act
+                await orderStatusController(req, res);
+
+                // Assert
+                expect(orderModel.findByIdAndUpdate).toHaveBeenCalledWith(
+                    "order123",
+                    { status },
+                    { new: true }
+                );
+                expect(res.json).toHaveBeenCalledWith(mockUpdatedOrder);
+
+                // Reset mocks between iterations
+                jest.clearAllMocks();
+            }
         });
 
         it("should handle errors when updating order status", async () => {
