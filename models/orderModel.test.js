@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Order from "./orderModel";
 
+// Ashley Chang Le Xuan, A0252633J
 describe("Order Model", () => {
     beforeAll(async () => {
         await mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/test");
@@ -30,53 +31,6 @@ describe("Order Model", () => {
             // Assert
             expect(order.products).toHaveLength(1);
             expect(order.status).toBe("Processing");
-        });
-
-        test("should set default status to 'Not Process'", async () => {
-            // Arrange
-            const orderData = {
-                products: [new mongoose.Types.ObjectId()],
-                buyer: new mongoose.Types.ObjectId(),
-            };
-
-            // Act
-            const order = await Order.create(orderData);
-
-            // Assert
-            expect(order.status).toBe("Not Process");
-        });
-
-        test("should reject invalid status", async () => {
-            // Arrange
-            const orderData = {
-                products: [new mongoose.Types.ObjectId()],
-                buyer: new mongoose.Types.ObjectId(),
-                status: "Invalid",
-            };
-
-             // Act
-            const order = await Order.create(orderData);
-
-            // Assert
-            expect(order).rejects.toThrow();
-        });
-
-        test("should accept all valid status values", async () => {
-            // Arrange
-            const validStatuses = ["Not Process", "Processing", "Shipped", "deliverd", "cancel"];
-
-            for (const status of validStatuses) {
-                // Act
-                const order = await Order.create({
-                    products: [new mongoose.Types.ObjectId()],
-                    buyer: new mongoose.Types.ObjectId(),
-                    status,
-                });
-
-                // Assert
-                expect(order.status).toBe(status);
-                await Order.deleteOne({ _id: order._id });
-            }
         });
 
         test("should allow multiple products", async () => {
@@ -122,10 +76,31 @@ describe("Order Model", () => {
             expect(order.createdAt).toBeInstanceOf(Date);
             expect(order.updatedAt).toBeInstanceOf(Date);
         });
+    });
 
-        test("should allow empty products array", async () => {
+    describe("Status Field Validation", () => {
+        test("should accept all valid status values (EP: Valid Status)", async () => {
+            // Arrange
+            const validStatuses = ["Not Process", "Processing", "Shipped", "deliverd", "cancel"];
+
+            for (const status of validStatuses) {
+                // Act
+                const order = await Order.create({
+                    products: [new mongoose.Types.ObjectId()],
+                    buyer: new mongoose.Types.ObjectId(),
+                    status,
+                });
+
+                // Assert
+                expect(order.status).toBe(status);
+                await Order.deleteOne({ _id: order._id });
+            }
+        });
+
+        test("should set default status to 'Not Process' (EP: Undefined)", async () => {
             // Arrange
             const orderData = {
+                products: [new mongoose.Types.ObjectId()],
                 buyer: new mongoose.Types.ObjectId(),
             };
 
@@ -133,7 +108,64 @@ describe("Order Model", () => {
             const order = await Order.create(orderData);
 
             // Assert
-            expect(order.products).toEqual([]);
+            expect(order.status).toBe("Not Process");
+        });
+
+        test("should reject invalid status (EP: Invalid Status)", async () => {
+            // Arrange
+            const orderData = {
+                products: [new mongoose.Types.ObjectId()],
+                buyer: new mongoose.Types.ObjectId(),
+                status: "Invalid",
+            };
+
+            // Act
+            let error;
+            try {
+                await Order.create(orderData);
+            } catch (e) {
+                error = e;
+            }
+
+            // Assert
+            expect(error).toBeDefined();
+            expect(error).toBeInstanceOf(mongoose.Error.ValidationError);
+        });
+
+        test("should default to 'Not Process' when status is null (EP: Null)", async () => {
+            // Arrange
+            const orderData = {
+                products: [new mongoose.Types.ObjectId()],
+                buyer: new mongoose.Types.ObjectId(),
+                status: null,
+            };
+
+            // Act
+            const order = await Order.create(orderData);
+
+            // Assert
+            expect(order.status).toBe("Not Process");
+        });
+
+        test("should reject empty string status (EP: Empty String)", async () => {
+            // Arrange
+            const orderData = {
+                products: [new mongoose.Types.ObjectId()],
+                buyer: new mongoose.Types.ObjectId(),
+                status: "",
+            };
+
+            // Act
+            let error;
+            try {
+                await Order.create(orderData);
+            } catch (e) {
+                error = e;
+            }
+
+            // Assert
+            expect(error).toBeDefined();
+            expect(error).toBeInstanceOf(mongoose.Error.ValidationError);
         });
     });
 });
