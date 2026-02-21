@@ -16,7 +16,7 @@ describe("Order Model", () => {
     });
 
     describe("Schema Validation", () => {
-        test("should create order with valid data (Products Array BV: 1)", async () => {
+        it("should create order with valid data (Products Array BV: 1)", async () => {
             // Arrange
             const orderData = {
                 products: [new mongoose.Types.ObjectId()],
@@ -33,7 +33,7 @@ describe("Order Model", () => {
             expect(order.status).toBe("Processing");
         });
 
-        test("should allow multiple products (Products Array BV: 2)", async () => {
+        it("should allow multiple products (Products Array BV: 2)", async () => {
             // Arrange
             const products = [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()];
 
@@ -47,7 +47,7 @@ describe("Order Model", () => {
             expect(order.products).toHaveLength(2);
         });
 
-        test("should allow empty products array (Products Array BV: 0)", async () => {
+        it("should allow empty products array (Products Array BV: 0)", async () => {
             // Arrange
             const orderData = {
                 buyer: new mongoose.Types.ObjectId(),
@@ -60,7 +60,7 @@ describe("Order Model", () => {
             expect(order.products).toEqual([]);
         });
 
-        test("should store payment as object", async () => {
+        it("should store payment as object", async () => {
             // Arrange
             const payment = { method: "paypal", amount: 100, status: "completed" };
 
@@ -75,7 +75,7 @@ describe("Order Model", () => {
             expect(order.payment).toEqual(payment);
         });
 
-        test("should create timestamps", async () => {
+        it("should create timestamps", async () => {
             // Arrange
             const orderData = {
                 products: [new mongoose.Types.ObjectId()],
@@ -92,7 +92,7 @@ describe("Order Model", () => {
     });
 
     describe("Status Field Validation", () => {
-        test("should accept all valid status values (EP: Valid Status)", async () => {
+        it("should accept all valid status values (EP: Valid Status)", async () => {
             // Arrange
             const validStatuses = ["Not Processed", "Processing", "Shipped", "Delivered", "Cancelled"];
 
@@ -110,7 +110,7 @@ describe("Order Model", () => {
             }
         });
 
-        test("should set default status to 'Not Processed' (EP: Undefined)", async () => {
+        it("should set default status to 'Not Processed' (EP: Undefined)", async () => {
             // Arrange
             const orderData = {
                 products: [new mongoose.Types.ObjectId()],
@@ -124,7 +124,7 @@ describe("Order Model", () => {
             expect(order.status).toBe("Not Processed");
         });
 
-        test("should reject invalid status (EP: Invalid Status)", async () => {
+        it("should reject invalid status (EP: Invalid Status)", async () => {
             // Arrange
             const orderData = {
                 products: [new mongoose.Types.ObjectId()],
@@ -145,7 +145,7 @@ describe("Order Model", () => {
             expect(error).toBeInstanceOf(mongoose.Error.ValidationError);
         });
 
-        test("should default to 'Not Processed' when status is null (EP: Null)", async () => {
+        it("should default to 'Not Processed' when status is null (EP: Null)", async () => {
             // Arrange
             const orderData = {
                 products: [new mongoose.Types.ObjectId()],
@@ -160,7 +160,7 @@ describe("Order Model", () => {
             expect(order.status).toBe("Not Processed");
         });
 
-        test("should reject empty string status (EP: Empty String)", async () => {
+        it("should reject empty string status (EP: Empty String)", async () => {
             // Arrange
             const orderData = {
                 products: [new mongoose.Types.ObjectId()],
