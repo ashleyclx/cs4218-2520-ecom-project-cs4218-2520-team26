@@ -38,6 +38,8 @@ jest.mock("colors", () => {
 import mongoose from "mongoose";
 import connectDB from "./db.js";
 
+// Khoo Jing Xiang, A0252605L
+
 describe("connectDB", () => {
   beforeEach(() => {
     jest.clearAllMocks();

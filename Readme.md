@@ -39,6 +39,34 @@
      - braintreeTokenController
      - brainTreePaymentController
 
+ **Khoo Jing Xiang, A0252605L**
+ - Client
+   - pages/Contact.js
+   - pages/Policy.js
+   - pages/About.js
+   - pages/Pagenotfound.js
+   - pages/ProductDetails.js
+   - pages/CategoryProduct.js
+   - components/Footer.js
+   - components/Header.js
+   - components/Layout.js
+   - components/Spinner.js
+
+ - Server
+   - controllers/productController.js
+      - getProductController
+      - getSingleProductController
+      - productPhotoController
+      - productFiltersController
+      - productCountController
+      - productListController
+      - searchProductController
+      - relatedProductController
+      - productCategoryController
+   - models/productModel.js
+   - config/db.js
+
+
 
 ## 1. Project Introduction
 

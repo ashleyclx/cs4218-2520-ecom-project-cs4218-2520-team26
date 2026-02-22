@@ -127,6 +127,7 @@ afterEach(() => {
   console.log.mockRestore?.();
 });
 
+// Khoo Jing Xiang, A0252605L
 describe("createProductController", () => {
   it("should return 500 when name is missing", async () => {
     const req = { fields: { ...razerFields, name: "" }, files: {} };
@@ -440,6 +441,7 @@ describe("productPhotoController", () => {
   });
 });
 
+// Khoo Jing Xiang, A0252605L
 describe("deleteProductController", () => {
   it("should delete product and returns success", async () => {
     const chain = { select: jest.fn().mockResolvedValue(undefined) };
@@ -482,7 +484,7 @@ describe("deleteProductController", () => {
     });
   });
 
-   
+// Khoo Jing Xiang, A0252605L   
 describe("updateProductController", () => {
   it("should return 500 when name is missing", async () => {
     const req = {
