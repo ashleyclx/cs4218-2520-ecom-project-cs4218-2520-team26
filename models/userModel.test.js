@@ -1,6 +1,7 @@
-// Emberlynn Loo, A0XXXXXXX
 import mongoose from "mongoose";
 import User from "./userModel.js";
+
+// Emberlynn Loo, A0XXXXXXX
 
 describe("User Model", () => {
     // Test schema field definitions
