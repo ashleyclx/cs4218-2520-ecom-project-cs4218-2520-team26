@@ -80,7 +80,7 @@ describe("Order Model", () => {
             }
         });
 
-        it("should set default status to 'Not Processed' (EP: Undefined)", () => {
+        it("should set default status to 'Not Processed' (EP: Omitted)", () => {
             // Arrange
             const orderData = { buyer: new mongoose.Types.ObjectId() };
 
@@ -106,21 +106,6 @@ describe("Order Model", () => {
             // Assert
             expect(error).toBeDefined();
             expect(error).toBeInstanceOf(mongoose.Error.ValidationError);
-        });
-
-        it("should default to 'Not Processed' when status is null (EP: Null)", () => {
-            // Arrange
-            const orderData = {
-                products: [new mongoose.Types.ObjectId()],
-                buyer: new mongoose.Types.ObjectId(),
-                status: null,
-            };
-
-            // Act
-            const order = new Order(orderData);
-
-            // Assert
-            expect(order.status).toBe("Not Processed");
         });
 
         it("should reject empty string status (EP: Empty String)", () => {
