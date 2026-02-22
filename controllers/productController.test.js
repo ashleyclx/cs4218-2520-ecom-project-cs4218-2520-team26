@@ -130,69 +130,87 @@ afterEach(() => {
 // Khoo Jing Xiang, A0252605L
 describe("createProductController", () => {
   it("should return 500 when name is missing", async () => {
+    // Arrange
     const req = { fields: { ...razerFields, name: "" }, files: {} };
     const res = makeRes();
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Name is Required" });
     expect(productModel).not.toHaveBeenCalled();
   });
 
   it("should return 500 when description is missing", async () => {
+    // Arrange
     const req = { fields: { ...razerFields, description: "" }, files: {} };
     const res = makeRes();
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Description is Required" });
     expect(productModel).not.toHaveBeenCalled();
   });
 
   it("should return 500 when price is missing", async () => {
+    // Arrange
     const req = { fields: { ...razerFields, price: "" }, files: {} };
     const res = makeRes();
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Price is Required" });
     expect(productModel).not.toHaveBeenCalled();
   });
 
   it("should return 500 when category is missing", async () => {
+    // Arrange
     const req = { fields: { ...razerFields, category: "" }, files: {} };
     const res = makeRes();
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Category is Required" });
     expect(productModel).not.toHaveBeenCalled();
   });
 
   it("should return 500 when quantity is missing", async () => {
+    // Arrange
     const req = { fields: { ...razerFields, quantity: "" }, files: {} };
     const res = makeRes();
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Quantity is Required" });
     expect(productModel).not.toHaveBeenCalled();
   });
 
   it("should return 500 when photo is > 1MB", async () => {
+    // Arrange
     const req = {
       fields: razerFields,
       files: { photo: { size: 1000001, path: "/tmp/x.jpg", type: "image/jpeg" } },
     };
     const res = makeRes();
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({
       error: "Photo is required and should be less than 1 MB",
@@ -201,14 +219,17 @@ describe("createProductController", () => {
   });
 
   it("should create product successfully (no photo)", async () => {
+    // Arrange
     const req = { fields: razerFields, files: {} };
     const res = makeRes();
 
     slugify.mockReturnValueOnce("razer-viper-v3-pro-wireless-gaming-mouse");
     productModel.__saveSpy.mockResolvedValueOnce(undefined);
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(slugify).toHaveBeenCalledWith(razerFields.name);
     expect(productModel).toHaveBeenCalledWith({
       ...razerFields,
@@ -227,6 +248,7 @@ describe("createProductController", () => {
   });
 
   it("should create product successfully (with photo)", async () => {
+    // Arrange
     const req = {
       fields: razerFields,
       files: {
@@ -243,8 +265,10 @@ describe("createProductController", () => {
     fs.readFileSync.mockReturnValueOnce(Buffer.from("fake-image"));
     productModel.__saveSpy.mockResolvedValueOnce(undefined);
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(fs.readFileSync).toHaveBeenCalledWith("/tmp/razer-viper-v3-pro.jpg");
     expect(productModel.__saveSpy).toHaveBeenCalledTimes(1);
 
@@ -262,6 +286,7 @@ describe("createProductController", () => {
     });
 
   it("should return 500 when save throws (unexpected error)", async () => {
+    // Arrange
     const req = { fields: razerFields, files: {} };
     const res = makeRes();
 
@@ -269,8 +294,10 @@ describe("createProductController", () => {
     const err = new Error("db save failed");
     productModel.__saveSpy.mockRejectedValueOnce(err);
 
+    // Act
     await createProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -285,6 +312,7 @@ describe("createProductController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("getProductController", () => {
   it("should return products (with chained query)", async () => {
+    // Arrange
     const mockProducts = [
       { _id: "1", name: "Razer Viper V3 Pro" },
       { _id: "2", name: "Nitendo Switch 2" },
@@ -296,8 +324,10 @@ describe("getProductController", () => {
     const req = {};
     const res = makeRes();
 
+    // Act
     await getProductController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({});
     expect(q.populate).toHaveBeenCalledWith("category");
     expect(q.select).toHaveBeenCalledWith("-photo");
@@ -314,6 +344,7 @@ describe("getProductController", () => {
   });
 
   it("should send an error payload when query fails", async () => {
+    // Arrange
     const err = new Error("db error");
     const q = chainQuery(err, { reject: true });
     productModel.find.mockReturnValue(q);
@@ -321,8 +352,10 @@ describe("getProductController", () => {
     const req = {};
     const res = makeRes();
 
+    // Act
     await getProductController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({
@@ -336,6 +369,7 @@ describe("getProductController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("getSingleProductController", () => {
   it("should return a single product by slug", async () => {
+    // Arrange
     const mockProduct = { _id: "p1", slug: "razer-viper-v3-pro", name: "Razer" };
     const q = chainQuery(mockProduct);
 
@@ -344,8 +378,10 @@ describe("getSingleProductController", () => {
     const req = { params: { slug: "razer-viper-v3-pro" } };
     const res = makeRes();
 
+    // Act
     await getSingleProductController(req, res);
 
+    // Assert
     expect(productModel.findOne).toHaveBeenCalledWith({
       slug: "razer-viper-v3-pro",
     });
@@ -361,6 +397,7 @@ describe("getSingleProductController", () => {
   });
 
   it("should send an error payload when query fails", async () => {
+    // Arrange
     const err = new Error("findOne failed");
     const q = chainQuery(err, { reject: true });
     productModel.findOne.mockReturnValue(q);
@@ -368,8 +405,10 @@ describe("getSingleProductController", () => {
     const req = { params: { slug: "razer-viper-v3-pro" } };
     const res = makeRes();
 
+    // Act
     await getSingleProductController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({
@@ -383,6 +422,7 @@ describe("getSingleProductController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("productPhotoController", () => {
   it("should set a Content-type and returns photo data when present", async () => {
+    // Arrange
     const photoBuf = Buffer.from("img");
     const mockProduct = {
       photo: { data: photoBuf, contentType: "image/jpeg" },
@@ -396,8 +436,10 @@ describe("productPhotoController", () => {
     const req = { params: { pid: "p1" } };
     const res = makeRes();
 
+    // Act
     await productPhotoController(req, res);
 
+    // Assert
     expect(productModel.findById).toHaveBeenCalledWith("p1");
     expect(q.select).toHaveBeenCalledWith("photo");
 
@@ -407,6 +449,7 @@ describe("productPhotoController", () => {
   });
 
   it("should do nothing if photo.data missing (no response sent)", async () => {
+    // Arrange
     const mockProduct = { photo: { data: null, contentType: "image/jpeg" } };
     const q = { select: jest.fn().mockResolvedValue(mockProduct) };
     productModel.findById.mockReturnValue(q);
@@ -414,14 +457,17 @@ describe("productPhotoController", () => {
     const req = { params: { pid: "p1" } };
     const res = makeRes();
 
+    // Act
     await productPhotoController(req, res);
 
+    // Assert
     expect(res.set).not.toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
     expect(res.send).not.toHaveBeenCalled();
   });
 
   it("should send an error payload when query fails", async () => {
+    // Arrange
     const err = new Error("photo query failed");
     const q = { select: jest.fn().mockRejectedValue(err) };
     productModel.findById.mockReturnValue(q);
@@ -429,8 +475,10 @@ describe("productPhotoController", () => {
     const req = { params: { pid: "p1" } };
     const res = makeRes();
 
+    // Act
     await productPhotoController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({
@@ -444,14 +492,17 @@ describe("productPhotoController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("deleteProductController", () => {
   it("should delete product and returns success", async () => {
+    // Arrange
     const chain = { select: jest.fn().mockResolvedValue(undefined) };
     productModel.findByIdAndDelete.mockReturnValue(chain);
 
     const req = { params: { pid: "p1" } };
     const res = makeRes();
 
+    // Act
     await deleteProductController(req, res);
 
+    // Assert
     expect(productModel.findByIdAndDelete).toHaveBeenCalledWith("p1");
     expect(chain.select).toHaveBeenCalledWith("-photo");
 
@@ -464,6 +515,7 @@ describe("deleteProductController", () => {
 });
 
   it("should send an error payload when delete fails", async () => {
+    // Arrange
     const err = new Error("delete failed");
     const chain = { select: jest.fn().mockRejectedValue(err) };
     productModel.findByIdAndDelete.mockReturnValue(chain);
@@ -471,8 +523,10 @@ describe("deleteProductController", () => {
     const req = { params: { pid: "p1" } };
     const res = makeRes();
 
+    // Act
     await deleteProductController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({
@@ -485,6 +539,7 @@ describe("deleteProductController", () => {
 // Khoo Jing Xiang, A0252605L   
 describe("updateProductController", () => {
   it("should return 500 when name is missing", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields, name: "" },
@@ -492,14 +547,17 @@ describe("updateProductController", () => {
     };
     const res = makeRes();
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Name is Required" });
     expect(productModel.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
   it("should return 500 when description is missing", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields, description: "" },
@@ -507,14 +565,17 @@ describe("updateProductController", () => {
     };
     const res = makeRes();
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Description is Required" });
     expect(productModel.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
   it("should return 500 when price is missing", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields, price: "" },
@@ -522,14 +583,17 @@ describe("updateProductController", () => {
     };
     const res = makeRes();
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Price is Required" });
     expect(productModel.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
   it("should return 500 when category is missing", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields, category: "" },
@@ -537,14 +601,17 @@ describe("updateProductController", () => {
     };
     const res = makeRes();
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Category is Required" });
     expect(productModel.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
   it("should return 500 when quantity is missing", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields, quantity: "" },
@@ -552,14 +619,17 @@ describe("updateProductController", () => {
     };
     const res = makeRes();
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Quantity is Required" });
     expect(productModel.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
   it("should return 500 when photo > 1MB", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields },
@@ -567,8 +637,10 @@ describe("updateProductController", () => {
     };
     const res = makeRes();
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({
       error: "Photo is required and should be less than 1 MB",
@@ -577,6 +649,7 @@ describe("updateProductController", () => {
   });
 
   it("should update product successfully (no photo)", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields },
@@ -591,8 +664,10 @@ describe("updateProductController", () => {
 
     productModel.findByIdAndUpdate.mockResolvedValueOnce(updatedDoc);
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(slugify).toHaveBeenCalledWith(razerFields.name);
     expect(productModel.findByIdAndUpdate).toHaveBeenCalledWith(
       "p1",
@@ -613,6 +688,7 @@ describe("updateProductController", () => {
   });
 
   it("should update product successfully (with photo)", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields },
@@ -634,8 +710,10 @@ describe("updateProductController", () => {
 
     productModel.findByIdAndUpdate.mockResolvedValueOnce(updatedDoc);
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(fs.readFileSync).toHaveBeenCalledWith("/tmp/razer-viper-v3-pro.jpg");
     expect(updatedDoc.photo.data).toEqual(Buffer.from("fake-image"));
     expect(updatedDoc.photo.contentType).toBe("image/jpeg");
@@ -645,6 +723,7 @@ describe("updateProductController", () => {
   });
 
   it("should return 500 when update throws an error", async () => {
+    // Arrange
     const req = {
       params: { pid: "p1" },
       fields: { ...razerFields },
@@ -655,8 +734,10 @@ describe("updateProductController", () => {
     const err = new Error("update failed");
     productModel.findByIdAndUpdate.mockRejectedValueOnce(err);
 
+    // Act
     await updateProductController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith(
@@ -672,14 +753,17 @@ describe("updateProductController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("productFiltersController", () => {
   it("should filter by category and price", async () => {
+    // Arrange
     const req = { body: { checked: ["electronics", "gadgets"], radio: [100, 300] } };
     const res = makeRes();
 
     const filtered = [{ _id: "p1" }];
     productModel.find.mockResolvedValueOnce(filtered);
 
+    // Act
     await productFiltersController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({
       category: ["electronics", "gadgets"],
       price: { $gte: 100, $lte: 300 },
@@ -689,27 +773,33 @@ describe("productFiltersController", () => {
   });
 
   it("should filter by category only", async () => {
+    // Arrange
     const req = { body: { checked: ["electronics"], radio: [] } };
     const res = makeRes();
 
     const filtered = [{ _id: "p1" }];
     productModel.find.mockResolvedValueOnce(filtered);
 
+    // Act
     await productFiltersController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({ category: ["electronics"] });
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
   it("should filter by price only", async () => {
+    // Arrange
     const req = { body: { checked: [], radio: [10, 20] } };
     const res = makeRes();
 
     const filtered = [{ _id: "p1" }];
     productModel.find.mockResolvedValueOnce(filtered);
 
+    // Act
     await productFiltersController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({
       price: { $gte: 10, $lte: 20 },
     });
@@ -717,27 +807,33 @@ describe("productFiltersController", () => {
   });
 
   it("should return all when no filters", async () => {
+    // Arrange
     const req = { body: { checked: [], radio: [] } };
     const res = makeRes();
 
     const filtered = [{ _id: "p1" }];
     productModel.find.mockResolvedValueOnce(filtered);
 
+    // Act
     await productFiltersController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({});
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
   it("should return 400 when find fails", async () => {
+    // Arrange
     const req = { body: { checked: [], radio: [] } };
     const res = makeRes();
 
     const err = new Error("filter fail");
     productModel.find.mockRejectedValueOnce(err);
 
+    // Act
     await productFiltersController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({
@@ -751,14 +847,17 @@ describe("productFiltersController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("productCountController", () => {
   it("should return count on success", async () => {
+    // Arrange
     const req = {};
     const res = makeRes();
 
     const chain = { estimatedDocumentCount: jest.fn().mockResolvedValueOnce(42) };
     productModel.find.mockReturnValueOnce(chain);
 
+    // Act
     await productCountController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({});
     expect(chain.estimatedDocumentCount).toHaveBeenCalledTimes(1);
     expect(res.status).toHaveBeenCalledWith(200);
@@ -766,6 +865,7 @@ describe("productCountController", () => {
   });
 
   it("should return 400 when count fails", async () => {
+    // Arrange
     const req = {};
     const res = makeRes();
 
@@ -773,8 +873,10 @@ describe("productCountController", () => {
     const chain = { estimatedDocumentCount: jest.fn().mockRejectedValueOnce(err) };
     productModel.find.mockReturnValueOnce(chain);
 
+    // Act
     await productCountController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({
@@ -789,6 +891,7 @@ describe("productCountController", () => {
 describe("productListController", () => {
   // skip ==6
   it("should return page 2 of products", async () => {
+    // Arrange
     const req = { params: { page: 2 } };
     const res = makeRes();
 
@@ -804,8 +907,10 @@ describe("productListController", () => {
 
     productModel.find.mockReturnValueOnce(q);
 
+    // Act
     await productListController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({});
     expect(q.select).toHaveBeenCalledWith("-photo");
     expect(q.skip).toHaveBeenCalledWith(6);
@@ -818,6 +923,7 @@ describe("productListController", () => {
 
   // skip == 0
   it("should default to page 1 when page is missing", async () => {
+    // Arrange
     const req = { params: {} };
     const res = makeRes();
 
@@ -833,13 +939,16 @@ describe("productListController", () => {
 
     productModel.find.mockReturnValueOnce(q);
 
+    // Act
     await productListController(req, res);
 
+    // Assert
     expect(q.skip).toHaveBeenCalledWith(0);
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
   it("should return 400 when query fails", async () => {
+    // Arrange
     const req = { params: { page: 1 } };
     const res = makeRes();
 
@@ -855,8 +964,10 @@ describe("productListController", () => {
 
     productModel.find.mockReturnValueOnce(q);
 
+    // Act
     await productListController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({
@@ -870,6 +981,7 @@ describe("productListController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("searchProductController", () => {
   it("should return search results on success", async () => {
+    // Arrange
     const req = { params: { keyword: "razer" } };
     const res = makeRes();
 
@@ -878,8 +990,10 @@ describe("searchProductController", () => {
     const q = { select: jest.fn().mockResolvedValueOnce(results) };
     productModel.find.mockReturnValueOnce(q);
 
+    // Act
     await searchProductController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({
       $or: [
         { name: { $regex: "razer", $options: "i" } },
@@ -891,6 +1005,7 @@ describe("searchProductController", () => {
   });
 
   it("should return 400 when search fails", async () => {
+    // Arrange
     const req = { params: { keyword: "razer" } };
     const res = makeRes();
 
@@ -898,8 +1013,10 @@ describe("searchProductController", () => {
     const q = { select: jest.fn().mockRejectedValueOnce(err) };
     productModel.find.mockReturnValueOnce(q);
 
+    // Act
     await searchProductController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({
@@ -913,6 +1030,7 @@ describe("searchProductController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("relatedProductController", () => {
   it("should return related products", async () => {
+    // Arrange
     const req = { params: { pid: "p1", cid: "c1" } };
     const res = makeRes();
 
@@ -927,8 +1045,10 @@ describe("relatedProductController", () => {
 
     productModel.find.mockReturnValueOnce(q);
 
+    // Act
     await relatedProductController(req, res);
 
+    // Assert
     expect(productModel.find).toHaveBeenCalledWith({
       category: "c1",
       _id: { $ne: "p1" },
@@ -942,6 +1062,7 @@ describe("relatedProductController", () => {
   });
 
   it("should return 400 when query fails", async () => {
+    // Arrange
     const req = { params: { pid: "p1", cid: "c1" } };
     const res = makeRes();
 
@@ -956,8 +1077,10 @@ describe("relatedProductController", () => {
 
     productModel.find.mockReturnValueOnce(q);
 
+    // Act
     await relatedProductController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({
@@ -971,6 +1094,7 @@ describe("relatedProductController", () => {
 // Khoo Jing Xiang, A0252605L
 describe("productCategoryController", () => {
   it("should return products by category", async () => {
+    // Arrange
     const req = { params: { slug: "mouse" } };
     const res = makeRes();
 
@@ -982,8 +1106,10 @@ describe("productCategoryController", () => {
     const q = { populate: jest.fn().mockResolvedValueOnce(prods) };
     productModel.find.mockReturnValueOnce(q);
 
+    // Act
     await productCategoryController(req, res);
 
+    // Assert
     expect(categoryModel.findOne).toHaveBeenCalledWith({ slug: "mouse" });
     expect(productModel.find).toHaveBeenCalledWith({ category: cat });
     expect(q.populate).toHaveBeenCalledWith("category");
@@ -997,14 +1123,17 @@ describe("productCategoryController", () => {
   });
 
   it("should return 400 when category query fails", async () => {
+    // Arrange
     const req = { params: { slug: "mouse" } };
     const res = makeRes();
 
     const err = new Error("cat fail");
     categoryModel.findOne.mockRejectedValueOnce(err);
 
+    // Act
     await productCategoryController(req, res);
 
+    // Assert
     expect(console.log).toHaveBeenCalledWith(err);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({

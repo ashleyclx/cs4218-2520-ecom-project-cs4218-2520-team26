@@ -13,20 +13,21 @@ jest.mock("react-hot-toast", () => ({
 // Khoo Jing Xiang, A0252605L
 describe("Layout", () => {
   it("should render Header, Footer, Toaster and children", () => {
-    // Arrange
+    // Arrange (Nothing needed)
+
+    // Act
     render(
       <Layout title="My Page">
         <div data-testid="child">Hello</div>
       </Layout>
     );
 
-    // Act
+    // Assert
     const header = screen.getByTestId("header");
     const footer = screen.getByTestId("footer");
     const toaster = screen.getByTestId("toaster");
     const child = screen.getByTestId("child");
 
-    // Assert
     expect(header).toBeInTheDocument();
     expect(footer).toBeInTheDocument();
     expect(toaster).toBeInTheDocument();
@@ -34,28 +35,32 @@ describe("Layout", () => {
   });
 
   it("should set document title from props", async () => {
-    // Arrange
+    // Arrange (Nothing needed)
+
+    // Act
     render(
       <Layout title="Custom Title">
         <div>Content</div>
       </Layout>
     );
 
-    // Act + Assert
+    // Assert
     await waitFor(() => {
       expect(document.title).toBe("Custom Title");
     });
   });
 
   it("should use default title when none provided", async () => {
-    // Arrange
+    // Arrange (Nothing needed)
+
+    // Act
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
 
-    // Act + Assert
+    // Assert
     await waitFor(() => {
       expect(document.title).toBe("Ecommerce app - shop now");
     });

@@ -29,15 +29,16 @@ describe("Spinner", () => {
   });
 
   it("should render countdown text and spinner", () => {
-    // Arrange
-    render(<Spinner />);
+    // Arrange (Nothing needed)
 
     // Act
+    render(<Spinner />);
+
+    // Assert
     const countdown = screen.getByText(/redirecting to you in/i);
     const spinner = screen.getByRole("status");
     const initialCount = screen.getByText(/3 second/i);
 
-    // Assert
     expect(countdown).toBeInTheDocument();
     expect(spinner).toBeInTheDocument();
     expect(initialCount).toBeInTheDocument();
@@ -47,7 +48,7 @@ describe("Spinner", () => {
     // Arrange
     render(<Spinner />);
 
-    // Act + Assert (stepwise)
+    // Act + Assert (interleaved)
     act(() => {
       jest.advanceTimersByTime(1000);
     });
@@ -62,7 +63,7 @@ describe("Spinner", () => {
       jest.advanceTimersByTime(1000);
     });
 
-    // Assert (navigation)
+    // Assert
     expect(mockNavigate).toHaveBeenCalledWith("/login", {
       state: "/protected",
     });

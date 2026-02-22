@@ -15,49 +15,52 @@ jest.mock("../components/Layout", () => ({ children, title }) => (
 
 describe("Pagenotfound page", () => {
   it("should render 404 and heading", () => {
-    // Arrange
+    // Arrange (Nothing needed)
+
+    // Act
     render(
       <MemoryRouter>
         <Pagenotfound />
       </MemoryRouter>
     );
 
-    // Act
+    // Assert
     const code = screen.getByText("404");
     const heading = screen.getByRole("heading", { name: /oops ! page not found/i });
 
-    // Assert
     expect(code).toBeInTheDocument();
     expect(heading).toBeInTheDocument();
   });
 
   it("should render inside Layout with correct title", () => {
-    // Arrange
+    // Arrange (Nothing needed)
+
+    // Act
     render(
       <MemoryRouter>
         <Pagenotfound />
       </MemoryRouter>
     );
 
-    // Act
+    // Assert
     const layoutTitle = screen.getByTestId("layout-title");
 
-    // Assert
     expect(layoutTitle).toHaveTextContent("go back- page not found");
   });
 
   it("should render Go Back link to /", () => {
-    // Arrange
+    // Arrange (Nothing needed)
+
+    // Act
     render(
       <MemoryRouter>
         <Pagenotfound />
       </MemoryRouter>
     );
 
-    // Act
+    // Assert
     const link = screen.getByRole("link", { name: /go back/i });
 
-    // Assert
     expect(link).toHaveAttribute("href", "/");
   });
 });

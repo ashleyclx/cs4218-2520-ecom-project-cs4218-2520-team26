@@ -18,22 +18,35 @@ jest.mock("./../components/Layout", () => {
 
 describe("Policy page", () => {
   it("should render inside Layout with correct title", () => {
+    // Arrange (Nothing needed)
+
+    // Act
     render(<Policy />);
 
+    // Assert
     expect(screen.getByTestId("layout")).toBeInTheDocument();
     expect(screen.getByTestId("layout-title")).toHaveTextContent("Privacy Policy");
   });
 
   it("should render policy text blocks", () => {
+    // Arrange (Nothing needed)
+    
+    // Act
     render(<Policy />);
 
+    // Assert
     const items = screen.getAllByText(/add privacy policy/i);
+
     expect(items).toHaveLength(7);
   });
 
   it("should render image with correct src and alt text", () => {
+    // Arrange (Nothing needed)
+
+    // Act
     render(<Policy />);
 
+    // Assert
     const img = screen.getByAltText("contactus");
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute("src", "/images/contactus.jpeg");

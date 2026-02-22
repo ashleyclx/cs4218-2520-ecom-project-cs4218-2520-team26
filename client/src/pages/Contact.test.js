@@ -24,15 +24,23 @@ jest.mock("react-icons/bi", () => ({
 
 describe("Contact page", () => {
   it("should render inside Layout with correct title", () => {
+    // Arrange (Nothing needed)
+
+    // Act
     render(<Contact />);
 
+    // Assert
     expect(screen.getByTestId("layout")).toBeInTheDocument();
     expect(screen.getByTestId("layout-title")).toHaveTextContent("Contact us");
   });
 
   it("should render heading and description", () => {
+    // Arrange (Nothing needed)
+
+    // Act
     render(<Contact />);
 
+    // Assert
     expect(
       screen.getByRole("heading", { name: /contact us/i })
     ).toBeInTheDocument();
@@ -44,8 +52,12 @@ describe("Contact page", () => {
   });
 
   it("should render contact details (email, phone, support)", () => {
+    // Arrange (Nothing needed)
+
+    // Act
     render(<Contact />);
 
+    // Assert
     expect(
       screen.getByText(/www\.help@ecommerceapp\.com/i)
     ).toBeInTheDocument();
@@ -61,8 +73,12 @@ describe("Contact page", () => {
   });
 
   it("should render contact image with correct src and alt text", () => {
+    // Arrange (Nothing needed)
+
+    // Act
     render(<Contact />);
 
+    // Assert
     const img = screen.getByAltText("contactus");
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute("src", "/images/contactus.jpeg");

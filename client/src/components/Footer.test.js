@@ -8,7 +8,8 @@ import Footer from "./Footer";
 
 describe("Footer", () => {
   it("should render footer text", () => {
-    // Arrange + Act
+    // Arrange (Nothing needed)
+    // Act
     render(
       <MemoryRouter>
         <Footer />
@@ -21,19 +22,20 @@ describe("Footer", () => {
   });
 
   it("should render links to About, Contact, Privacy Policy", () => {
-    // Arrange
+    // Arrange (Nothing needed)
+
+    // Act
     render(
       <MemoryRouter>
         <Footer />
       </MemoryRouter>
     );
 
-    // Act
+    // Assert
     const about = screen.getByRole("link", { name: /about/i });
     const contact = screen.getByRole("link", { name: /contact/i });
     const policy = screen.getByRole("link", { name: /privacy policy/i });
 
-    // Assert
     expect(about).toHaveAttribute("href", "/about");
     expect(contact).toHaveAttribute("href", "/contact");
     expect(policy).toHaveAttribute("href", "/policy");

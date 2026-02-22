@@ -13,38 +13,41 @@ jest.mock("../components/Layout", () => ({ children, title }) => (
 // Khoo Jing Xiang, A0252605L
 describe("About page", () => {
   it("should render inside Layout with correct title", () => {
-    // Arrange
-    render(<About />);
+    // Arrange (Nothing needed)
 
     // Act
+    render(<About />);
+
+    // Assert
     const layout = screen.getByTestId("layout");
     const title = screen.getByTestId("layout-title");
 
-    // Assert
     expect(layout).toBeInTheDocument();
     expect(title).toHaveTextContent("About us - Ecommerce app");
   });
 
   it("should render about image with correct src + alt", () => {
-    // Arrange
-    render(<About />);
+    // Arrange (Nothing needed)
 
     // Act
-    const img = screen.getByAltText("contactus");
+    render(<About />);
 
     // Assert
+    const img = screen.getByAltText("contactus");
+
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute("src", "/images/about.jpeg");
   });
 
   it("should render the about text", () => {
-    // Arrange
-    render(<About />);
+    // Arrange (Nothing needed)
 
     // Act
+    render(<About />);
+    
+    // Assert
     const text = screen.getByText(/add text/i);
 
-    // Assert
     expect(text).toBeInTheDocument();
   });
 });
