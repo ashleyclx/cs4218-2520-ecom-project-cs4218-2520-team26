@@ -179,6 +179,9 @@ describe("Profile Component", () => {
             fireEvent.change(screen.getByPlaceholderText("Enter Your Name"), {
                 target: { value: "Jane Doe" },
             });
+            fireEvent.change(screen.getByPlaceholderText("Enter Your Password"), {
+                target: { value: "validPass" },
+            });
             fireEvent.click(screen.getByText("UPDATE"));
 
             // Assert
@@ -188,8 +191,25 @@ describe("Profile Component", () => {
                     email: "john@test.com",
                     phone: "1234567890",
                     address: "123 Main St",
+                    password: "validPass",
                 }));
                 expect(toast.success).toHaveBeenCalledWith("Profile Updated Successfully");
+            });
+        });
+
+        it("should display error toast when API returns error in data (EP: data.error)", async () => {
+            // Arrange
+            axios.put.mockResolvedValueOnce({
+                data: { error: "Profile update failed" },
+            });
+            renderComponent();
+
+            // Act
+            fireEvent.click(screen.getByText("UPDATE"));
+
+            // Assert
+            await waitFor(() => {
+                expect(toast.error).toHaveBeenCalledWith("Profile update failed");
             });
         });
 
@@ -208,28 +228,6 @@ describe("Profile Component", () => {
             });
 
             console.log.mockRestore();
-        });
-
-        it("should update password when valid password provided (BV: ≥6 chars)", async () => {
-            // Arrange
-            axios.put.mockResolvedValueOnce({
-                data: { updatedUser: mockUser },
-            });
-            window.localStorage.getItem.mockReturnValue(JSON.stringify({ user: mockUser }));
-            renderComponent();
-
-            // Act
-            fireEvent.change(screen.getByPlaceholderText("Enter Your Password"), {
-                target: { value: "validPass" },
-            });
-            fireEvent.click(screen.getByText("UPDATE"));
-
-            // Assert
-            await waitFor(() => {
-                expect(axios.put).toHaveBeenCalledWith("/api/v1/auth/profile", expect.objectContaining({
-                    password: "validPass",
-                }));
-            });
         });
 
         it("should update localStorage after successful profile update", async () => {
