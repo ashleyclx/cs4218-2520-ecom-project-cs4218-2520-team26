@@ -3,7 +3,6 @@ import { render, screen, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Spinner from "./Spinner";
 
-// mock react-router hooks
 const mockNavigate = jest.fn();
 const mockUseLocation = jest.fn();
 

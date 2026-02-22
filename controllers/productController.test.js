@@ -465,8 +465,6 @@ describe("deleteProductController", () => {
 
   it("should send an error payload when delete fails", async () => {
     const err = new Error("delete failed");
-    // if controller does: await productModel.findByIdAndDelete(...).select(...)
-    // then findByIdAndDelete must return object with select() that rejects.
     const chain = { select: jest.fn().mockRejectedValue(err) };
     productModel.findByIdAndDelete.mockReturnValue(chain);
 
