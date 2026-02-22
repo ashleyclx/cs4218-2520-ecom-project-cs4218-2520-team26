@@ -23,6 +23,22 @@
     - orderStatusController
   - models/orderModel.js
 
+ **Earnest Suprapmo, A0251966U**
+ - Client
+   - pages/HomePage.js
+   - context/cart.js
+   - pages/CartPage.js
+   - hooks/useCategory.js
+   - pages/Categories.js
+ - Server
+   - models/categoryModel.js
+   - controllers/categoryController.js
+     - categoryController
+     - singleCategoryController
+   - controllers/productController.js
+     - braintreeTokenController
+     - brainTreePaymentController
+
 
 ## 1. Project Introduction
 
