@@ -116,7 +116,8 @@ describe("User Model", () => {
             const user = new User({
                 name: "Test",
                 email: "test@test.com",
-                phone: "12345678",
+                // phone is intentionally omitted
+                password: "password",
                 address: "123 Street",
                 answer: "answer",
             });
