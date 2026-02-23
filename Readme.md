@@ -3,7 +3,7 @@
 ## MS1
 
 ### MS1 CI URL
-[MS1 CI URL](https://github.com/cs4218/cs4218-2520-ecom-project-cs4218-2520-team26/actions/runs/22290437213/job/64476618552)
+[MS1 CI URL](https://github.com/cs4218/cs4218-2520-ecom-project-cs4218-2520-team26/actions/runs/22290666072/job/64477225444)
 
 ### Individual Contributions
 
