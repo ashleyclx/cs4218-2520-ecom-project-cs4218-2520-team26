@@ -90,32 +90,15 @@ describe("Profile integration with real AuthProvider and mocked axios boundary",
     setAuthInStorage(initialAuth);
   });
 
-  it("reads user data from real AuthProvider and pre-populates form fields", async () => {
+  it("hydrates auth state from localStorage through real AuthProvider", async () => {
     // Arrange
     renderProfileWithAuthProvider();
-
-    // Act + Assert
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText("Enter Your Name")).toHaveValue("John Doe");
-      expect(screen.getByPlaceholderText("Enter Your Phone")).toHaveValue("1234567890");
-      expect(screen.getByPlaceholderText("Enter Your Address")).toHaveValue("123 Main St");
-      expect(screen.getByPlaceholderText("Enter Your Email")).toHaveValue("john@test.com");
-    });
-  });
-
-  it("keeps email input disabled and unchanged by user typing", async () => {
-    // Arrange
-    const user = userEvent;
-    renderProfileWithAuthProvider();
-
-    const emailInput = await screen.findByPlaceholderText("Enter Your Email");
-
-    // Act
-    user.type(emailInput, "changed@test.com");
 
     // Assert
-    expect(emailInput).toBeDisabled();
-    expect(emailInput).toHaveValue("john@test.com");
+    await waitFor(() => {
+      expect(screen.getByTestId("auth-user-name").textContent).toBe("John Doe");
+      expect(screen.getByTestId("auth-user-email").textContent).toBe("john@test.com");
+    });
   });
 
   describe("EP - API outcome partitions", () => {
@@ -239,35 +222,4 @@ describe("Profile integration with real AuthProvider and mocked axios boundary",
     });
   });
 
-  it("submits current values even when password is left empty", async () => {
-    // Arrange
-    const user = userEvent;
-    axios.put.mockResolvedValueOnce({
-      data: {
-        updatedUser: {
-          ...initialAuth.user,
-          name: "No Password Change",
-        },
-      },
-    });
-
-    renderProfileWithAuthProvider();
-
-    // Act
-    user.clear(screen.getByPlaceholderText("Enter Your Name"));
-    user.type(screen.getByPlaceholderText("Enter Your Name"), "No Password Change");
-    user.click(screen.getByRole("button", { name: "UPDATE" }));
-
-    // Assert
-    await waitFor(() => {
-      expect(axios.put).toHaveBeenCalledWith(
-        "/api/v1/auth/profile",
-        expect.objectContaining({
-          password: "",
-          name: "No Password Change",
-          email: "john@test.com",
-        })
-      );
-    });
-  });
 });

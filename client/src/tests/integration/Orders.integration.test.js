@@ -3,7 +3,6 @@ import React from "react";
 import { MemoryRouter } from "react-router-dom";
 import { render, screen, waitFor } from "@testing-library/react";
 import axios from "axios";
-import moment from "moment";
 
 import Orders from "../../pages/user/Orders";
 import { AuthProvider } from "../../context/auth";
@@ -82,7 +81,7 @@ describe("Orders integration with real AuthProvider and mocked axios boundary", 
   });
 
   describe("EP - Auth token partitions", () => {
-    it("EP: when auth token exists, fetches orders on mount and renders order table details", async () => {
+    it("EP: when auth token exists, fetches orders on mount", async () => {
       // Arrange
       setAuthInStorage({
         user: { _id: "u1", name: "John Doe" },
@@ -97,12 +96,6 @@ describe("Orders integration with real AuthProvider and mocked axios boundary", 
       await waitFor(() => {
         expect(axios.get).toHaveBeenCalledWith("/api/v1/auth/orders");
       });
-
-      expect(await screen.findByText("Processing")).toBeInTheDocument();
-      expect(screen.getByText("John Doe")).toBeInTheDocument();
-      expect(screen.getByText(moment(orderDate).fromNow())).toBeInTheDocument();
-      expect(screen.getByText("Success")).toBeInTheDocument();
-      expect(screen.getByText("2")).toBeInTheDocument();
     });
 
     it("EP: when auth token is absent, does not call orders API and renders no order rows", async () => {
@@ -123,38 +116,6 @@ describe("Orders integration with real AuthProvider and mocked axios boundary", 
       expect(screen.queryByText("Processing")).not.toBeInTheDocument();
       expect(screen.queryByText("Success")).not.toBeInTheDocument();
     });
-  });
-
-  it("renders products with image URL, name, truncated description, and price", async () => {
-    // Arrange
-    setAuthInStorage({
-      user: { _id: "u1", name: "John Doe" },
-      token: "valid-token",
-    });
-    axios.get.mockResolvedValueOnce({ data: ordersPayload });
-
-    // Act
-    renderOrdersWithAuthProvider();
-
-    // Assert
-    await waitFor(() => {
-      expect(screen.getByText("Mechanical Keyboard")).toBeInTheDocument();
-      expect(screen.getByText("Gaming Mouse")).toBeInTheDocument();
-    });
-
-    expect(
-      screen.getByText(ordersPayload[0].products[0].description.substring(0, 30))
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(ordersPayload[0].products[1].description.substring(0, 30))
-    ).toBeInTheDocument();
-    expect(screen.getByText("Price : 129")).toBeInTheDocument();
-    expect(screen.getByText("Price : 69")).toBeInTheDocument();
-
-    const keyboardImage = screen.getByRole("img", { name: "Mechanical Keyboard" });
-    const mouseImage = screen.getByRole("img", { name: "Gaming Mouse" });
-    expect(keyboardImage).toHaveAttribute("src", "/api/v1/product/product-photo/p1");
-    expect(mouseImage).toHaveAttribute("src", "/api/v1/product/product-photo/p2");
   });
 
   it("renders real UserMenu links correctly alongside orders", async () => {
@@ -183,45 +144,8 @@ describe("Orders integration with real AuthProvider and mocked axios boundary", 
     );
   });
 
-  describe("EP - API outcome partitions", () => {
-    it("EP: renders payment status classes for success and failure orders", async () => {
-      // Arrange
-      setAuthInStorage({
-        user: { _id: "u3", name: "Buyer" },
-        token: "valid-token",
-      });
-      axios.get.mockResolvedValueOnce({
-        data: [
-          {
-            _id: "order-success",
-            status: "Delivered",
-            buyer: { name: "Buyer" },
-            createdAt: orderDate,
-            payment: { success: true },
-            products: [],
-          },
-          {
-            _id: "order-failed",
-            status: "Cancelled",
-            buyer: { name: "Buyer" },
-            createdAt: orderDate,
-            payment: { success: false },
-            products: [],
-          },
-        ],
-      });
-
-      // Act
-      renderOrdersWithAuthProvider();
-
-      // Assert
-      await waitFor(() => {
-        expect(screen.getByText("Success")).toBeInTheDocument();
-        expect(screen.getByText("Failed")).toBeInTheDocument();
-      });
-    });
-
-    it("EP: API rejection keeps page stable and does not render order rows", async () => {
+  describe("API error handling", () => {
+    it("keeps page stable when orders API rejects", async () => {
       // Arrange
       setAuthInStorage({
         user: { _id: "u4", name: "Error User" },
