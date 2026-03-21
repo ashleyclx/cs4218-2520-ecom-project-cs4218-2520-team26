@@ -7,8 +7,8 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import {
   braintreeTokenController,
   brainTreePaymentController,
-} from "../../../controllers/productController.js";
-import orderModel from "../../../models/orderModel.js";
+} from "../../controllers/productController.js";
+import orderModel from "../../models/orderModel.js";
 
 // Mock only Braintree gateway at the boundary
 jest.mock("braintree", () => {

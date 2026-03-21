@@ -8,8 +8,8 @@ import axios from "axios";
 
 import HomePage from "client/src/pages/HomePage";
 import { useCart } from "client/src/context/cart";
-import { renderWithProviders } from "../../helpers/renderWithProviders";
-import { setupMockLocalStorage } from "../../helpers/mockLocalStorage";
+import { renderWithProviders } from "../helpers/renderWithProviders";
+import { setupMockLocalStorage } from "../helpers/mockLocalStorage";
 
 jest.mock(
   "axios",
@@ -27,6 +27,10 @@ jest.mock(
   }),
   { virtual: true }
 );
+
+jest.mock("react-icons/ai", () => ({
+  AiOutlineReload: () => <span data-testid="reload-icon" />,
+}));
 
 jest.mock("client/src/components/Layout", () => ({
   __esModule: true,

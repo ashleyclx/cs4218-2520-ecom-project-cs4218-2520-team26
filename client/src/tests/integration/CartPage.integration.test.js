@@ -9,8 +9,8 @@ import toast from "react-hot-toast";
 
 import { useCart } from "client/src/context/cart";
 import CartPage from "client/src/pages/CartPage";
-import { renderWithProviders } from "../../helpers/renderWithProviders";
-import { setupMockLocalStorage } from "../../helpers/mockLocalStorage";
+import { renderWithProviders } from "../helpers/renderWithProviders";
+import { setupMockLocalStorage } from "../helpers/mockLocalStorage";
 
 jest.mock(
   "axios",
