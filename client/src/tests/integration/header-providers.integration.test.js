@@ -46,9 +46,9 @@ jest.mock(
 );
 
 import Header from "client/src/components/Header";
-import { renderWithProviders } from "../../helpers/renderWithProviders";
-import { setupMockLocalStorage } from "../../helpers/mockLocalStorage";
-import { mockCategoryApi } from "../../helpers/mockCategoryApi";
+import { renderWithProviders } from "../helpers/renderWithProviders";
+import { setupMockLocalStorage } from "../helpers/mockLocalStorage";
+import { mockCategoryApi } from "../helpers/mockCategoryApi";
 import toast from "react-hot-toast";
 
 describe("Header + AuthProvider + CartProvider + useCategory Integration", () => {

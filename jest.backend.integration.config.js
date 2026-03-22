@@ -4,7 +4,8 @@ export default {
   testEnvironment: "node",
 
   testMatch: [
-    "<rootDir>/tests/integration/backend/*.integration.test.js",
+    "<rootDir>/tests/integration/authController/*.integration.test.js",
+    "<rootDir>/tests/integration/*.integration.test.js",
   ],
 };
 
