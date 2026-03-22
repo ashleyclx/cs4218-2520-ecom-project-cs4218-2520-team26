@@ -189,7 +189,7 @@ describe("authController - Profile and Orders", () => {
             expect(res.status).toHaveBeenCalledWith(409);
             expect(res.send).toHaveBeenCalledWith({
                 success: false,
-                message: "Already Registered. Please login",
+                message: "This email has already been registered. Please login",
             });
         });
             
@@ -264,10 +264,10 @@ describe("authController - Profile and Orders", () => {
             await loginController(req, res);
 
             // Assert
-            expect(res.status).toHaveBeenCalledWith(401);
+            expect(res.status).toHaveBeenCalledWith(400);
             expect(res.send).toHaveBeenCalledWith({
                 success: false,
-                message: "Invalid email or password",
+                message: "Email is required",
             });
         });
 
@@ -279,10 +279,10 @@ describe("authController - Profile and Orders", () => {
             await loginController(req, res);
 
             // Assert
-            expect(res.status).toHaveBeenCalledWith(401);
+            expect(res.status).toHaveBeenCalledWith(400);
             expect(res.send).toHaveBeenCalledWith({
                 success: false,
-                message: "Invalid email or password",
+                message: "Password is required",
             });
         });
 
@@ -296,10 +296,10 @@ describe("authController - Profile and Orders", () => {
 
             // Assert
             expect(userModel.findOne).toHaveBeenCalledWith({ email: mockUser.email });
-            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.status).toHaveBeenCalledWith(401);
             expect(res.send).toHaveBeenCalledWith({
                 success: false,
-                message: "Email is not registered",
+                message: "No account found with this email",
             });
         });
 
@@ -318,7 +318,7 @@ describe("authController - Profile and Orders", () => {
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.send).toHaveBeenCalledWith({
                 success: false,
-                message: "Invalid Password",
+                message: "Incorrect password",
             });
         });
 

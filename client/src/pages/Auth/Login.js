@@ -14,7 +14,19 @@ const Login = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  
+
+  const getErrorMessage = (error) => {
+    if (error?.response?.data?.message) {
+      return error.response.data.message;
+    }
+    if (error?.code === "ECONNABORTED") {
+      return "Request timeout. Please try again.";
+    }
+    if (!error?.response) {
+      return "Network error. Please check your connection.";
+    }
+    return "Unable to login right now. Please try again.";
+  };
 
   // form function
   const handleSubmit = async (e) => {
@@ -45,7 +57,7 @@ const Login = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something went wrong");
+      toast.error(getErrorMessage(error));
     }
   };
   return (

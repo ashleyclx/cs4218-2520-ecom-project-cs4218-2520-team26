@@ -235,7 +235,7 @@ describe('Login Component', () => {
 
         // Assert
         await waitFor(() => expect(axios.post).toHaveBeenCalled());
-        expect(toast.error).toHaveBeenCalledWith('Something went wrong');
+        expect(toast.error).toHaveBeenCalledWith('Network error. Please check your connection.');
         console.log.mockRestore();
     });
 

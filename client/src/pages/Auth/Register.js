@@ -21,7 +21,7 @@ const Register = () => {
       }
       return "Network error. Please check your connection.";
     }
-    return "Something went wrong";
+    return "Unable to register right now. Please try again later.";
   };
 
   // form function
