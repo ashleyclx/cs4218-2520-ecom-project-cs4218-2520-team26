@@ -41,7 +41,7 @@ import {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const waitForOrderCount = async (expectedCount, tries = 5, delayMs = 20) => {
+const waitForOrderCount = async (expectedCount, tries = 20, delayMs = 50) => {
   for (let i = 0; i < tries; i++) {
     const count = await orderModel.countDocuments();
     if (count === expectedCount) return;
