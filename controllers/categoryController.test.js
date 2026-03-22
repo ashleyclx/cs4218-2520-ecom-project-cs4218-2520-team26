@@ -158,6 +158,9 @@ describe("singleCategoryController", () => {
 
 //Emberlynn Loo, A0255614E
 describe("createCategoryController", () => {
+  beforeEach(() => {
+      jest.clearAllMocks();
+  });
 
   it("should return 401 if name is missing", async () => {
       // Arrange
@@ -168,7 +171,11 @@ describe("createCategoryController", () => {
       await createCategoryController(req, res);
 
       // Assert
-      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith({
+          success: false,
+          message: "Name is required",
+      });
   });
 
   it("should return existing category", async () => {
@@ -177,12 +184,13 @@ describe("createCategoryController", () => {
       const res = mockResponse();
 
       categoryModel.findOne.mockResolvedValue({ name: "Existing Category" });
+      slugify.mockReturnValue("existing-category");
 
       // Act
       await createCategoryController(req, res);
 
       // Assert
-      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.status).toHaveBeenCalledWith(409);
   });
 
   it("should create new category", async () => {
@@ -221,6 +229,9 @@ describe("createCategoryController", () => {
 
 //Emberlynn Loo, A0255614E
 describe("updateCategoryController", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
 
     it("should update category", async () => {
         // Arrange
@@ -228,7 +239,7 @@ describe("updateCategoryController", () => {
         const res = mockResponse();
 
         slugify.mockReturnValue("updated");
-
+        categoryModel.findOne.mockResolvedValue(null);
         categoryModel.findByIdAndUpdate.mockResolvedValue({ name: "Updated" });
 
         // Act
@@ -242,7 +253,8 @@ describe("updateCategoryController", () => {
         // Arrange
         const req = { body: { name: "Err" }, params: { id: "1" } };
         const res = mockResponse();
-
+        slugify.mockReturnValue("err");
+        categoryModel.findOne.mockResolvedValue(null);
         categoryModel.findByIdAndUpdate.mockRejectedValue(new Error());
 
         // Act
@@ -255,14 +267,17 @@ describe("updateCategoryController", () => {
 
 //Emberlynn Loo, A0255614E
 describe("deleteCategoryController", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
 
     it("should delete category", async () => {
         // Arrange
         const req = { params: { id: "1" } };
         const res = mockResponse();
 
-        categoryModel.findByIdAndDelete.mockResolvedValue();
-
+        categoryModel.findByIdAndDelete.mockResolvedValue({ _id: "1" });
+        
         // Act
         await deleteCategoryController(req, res);
 

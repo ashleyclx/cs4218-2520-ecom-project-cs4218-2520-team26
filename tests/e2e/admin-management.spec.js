@@ -61,6 +61,22 @@ const gotoAdminPage = async (page, routePath) => {
 
 // Nicholas Koh Zi Lun, A0272806B
 test.describe("admin category and order management", () => {
+  test("unauthenticated user is redirected to login from admin page", async ({
+    page,
+  }) => {
+    await page.context().clearCookies();
+    await page.addInitScript(() => {
+      localStorage.removeItem("auth");
+    });
+
+    await page.goto("/dashboard/admin/create-category");
+    await expect(page.getByText(/redirecting to you in/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/login$/i, { timeout: 10000 });
+    await expect(
+      page.getByRole("heading", { name: /login form/i }),
+    ).toBeVisible();
+  });
+
   test("admin can create, edit, and delete category", async ({ page }) => {
     const suffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
     const categoryName = `E2E Category ${suffix}`;
@@ -129,6 +145,20 @@ test.describe("admin category and order management", () => {
     await expect(page.locator("tr", { hasText: categoryName })).toHaveCount(0);
   });
 
+  test("shows validation error when creating category with empty name", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await assertAdminSession(page);
+
+    await gotoAdminPage(page, "/dashboard/admin/create-category");
+
+    await page.getByPlaceholder("Enter new category").fill("   ");
+    await page.getByRole("button", { name: "Submit" }).first().click();
+
+    await expect(page.getByText(/name is required/i).first()).toBeVisible();
+  });
+
   test("shows error toast when renaming category to an existing category name", async ({
     page,
   }) => {
@@ -194,11 +224,6 @@ test.describe("admin category and order management", () => {
 
     await gotoAdminPage(page, "/dashboard/admin/create-category");
 
-    const row = page.locator("tbody tr").first();
-    await expect(row).toBeVisible();
-
-    const categoryName = (await row.locator("td").first().innerText()).trim();
-
     await page.route("**/api/v1/category/delete-category/**", async (route) => {
       await route.fulfill({
         status: 500,
@@ -210,7 +235,18 @@ test.describe("admin category and order management", () => {
       });
     });
 
-    await row.getByRole("button", { name: "Delete" }).click();
+    const row = page.locator("tbody tr").first();
+    await expect(row).toBeVisible();
+
+    const categoryName = (await row.locator("td").first().innerText()).trim();
+
+    await Promise.all([
+      page.waitForResponse((res) =>
+        res.url().includes("/api/v1/category/delete-category/"),
+      ),
+      row.getByRole("button", { name: "Delete" }).click(),
+    ]);
+
     await expect(
       page.getByText(/error while deleting category/i).first(),
     ).toBeVisible();
@@ -344,6 +380,31 @@ test.describe("admin category and order management", () => {
     await expect(statusSelect).toContainText(currentStatus);
 
     await page.unroute("**/api/v1/auth/order-status/**");
+    await page.unroute("**/api/v1/auth/all-orders");
+  });
+
+  test("shows error toast when loading orders fails", async ({ page }) => {
+    await page.goto("/");
+    await assertAdminSession(page);
+
+    await page.route("**/api/v1/auth/all-orders", async (route) => {
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+          message: "Unable to load orders",
+        }),
+      });
+    });
+
+    await gotoAdminPage(page, "/dashboard/admin/orders");
+
+    await expect(
+      page.getByText(/unable to load orders/i).first(),
+    ).toBeVisible();
+    await expect(page.locator(".border.shadow")).toHaveCount(0);
+
     await page.unroute("**/api/v1/auth/all-orders");
   });
 });
