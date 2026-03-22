@@ -24,6 +24,7 @@ const AdminOrders = () => {
       setOrders(data);
     } catch (error) {
       console.log(error);
+      toast.error("Unable to load orders");
     }
   };
 
@@ -36,9 +37,22 @@ const AdminOrders = () => {
       const { data } = await axios.put(`/api/v1/auth/order-status/${orderId}`, {
         status: value,
       });
+
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === orderId
+            ? { ...order, status: data?.status || value }
+            : order,
+        ),
+      );
+
+      toast.success("Order status updated successfully");
       getOrders();
     } catch (error) {
       console.log(error);
+      toast.error(
+        error?.response?.data?.error || "Unable to update order status",
+      );
     }
   };
   return (
@@ -70,7 +84,7 @@ const AdminOrders = () => {
                         <Select
                           bordered={false}
                           onChange={(value) => handleChange(o._id, value)}
-                          defaultValue={o?.status}
+                          value={o?.status}
                         >
                           {status.map((s, i) => (
                             <Option key={i} value={s}>

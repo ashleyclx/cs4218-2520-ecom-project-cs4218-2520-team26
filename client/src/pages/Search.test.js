@@ -5,6 +5,12 @@ import Search from "./Search";
 const { useSearch } = require("../context/search");
 const { useCart } = require("../context/cart");
 
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+    ...jest.requireActual("react-router-dom"),
+    useNavigate: () => mockNavigate,
+}));
+
 jest.mock("../components/Layout", () => {
     return function MockLayout({ children, title }) {
         return <div data-testid="layout">{children}</div>;
@@ -24,6 +30,7 @@ describe("Search Component", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         useCart.mockReturnValue([[], jest.fn()]);
+        mockNavigate.mockClear();
     });
 
     it("should render Search Results heading", () => {
