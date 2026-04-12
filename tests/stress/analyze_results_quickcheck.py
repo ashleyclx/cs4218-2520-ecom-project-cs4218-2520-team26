@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Analyze JMeter results for the thread-staircase checkout stress test.
+Analyze JMeter results for the quick sanity sweep (90, 120, 150 users).
 
-Focus:
-- breaking point by concurrent user stage
-- graceful vs hard failure mode
-- flow-level latency (Transaction Controller parent sample)
-- payment-step latency (critical endpoint)
-- sustainable max users under both error threshold and latency threshold
+Purpose:
+- quickly tell whether each stage is functioning at all
+- summarize flow-level and payment-level latency
+- classify failure mode as hard vs graceful
+- identify the highest healthy stage under configurable thresholds
 
 Usage:
-  python analyze_threads_stress.py results/checkout_stress_threads_only.csv \
+  python analyze_results_quickcheck.py results/checkout_stress_quickcheck_90_120_150.csv \
       --error-threshold 0.05 --p95-threshold-ms 5000
 """
 
@@ -21,23 +20,16 @@ import csv
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from statistics import median
 
 STAGES = [
     ("Stage 0 - Smoke - 1 users", 1),
-    ("Stage 1 - 10 users", 10),
-    ("Stage 2 - 20 users", 20),
-    ("Stage 3 - 30 users", 30),
-    ("Stage 4 - 40 users", 40),
-    ("Stage 5 - 50 users", 50),
-    ("Stage 6 - 60 users", 60),
-    ("Stage 7 - 75 users", 75),
-    ("Stage 8 - 90 users", 90),
+    ("Stage 1 - 90 users", 90),
+    ("Stage 2 - 120 users", 120),
+    ("Stage 3 - 150 users", 150),
 ]
 
 FLOW_LABEL = "Checkout Flow"
 PAYMENT_LABEL = "Checkout - Payment and Order Creation"
-READ_LABEL = "Order Verification - DB Read"
 
 
 @dataclass
@@ -102,7 +94,6 @@ def summarize(rows: list[dict[str, str]]) -> list[StageSummary]:
             grouped[match[0]].append(row)
 
     results: list[StageSummary] = []
-    stage_lookup = dict(STAGES)
     for stage, users in STAGES:
         stage_rows = grouped.get(stage, [])
         if not stage_rows:
@@ -144,9 +135,17 @@ def summarize(rows: list[dict[str, str]]) -> list[StageSummary]:
     return results
 
 
+def health_label(s: StageSummary, error_threshold: float, p95_threshold_ms: float) -> str:
+    if s.flow_error_rate >= error_threshold:
+        return "BROKEN"
+    if s.flow_p95_ms >= p95_threshold_ms:
+        return "DEGRADED"
+    return "HEALTHY"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("results_csv", nargs="?", default="results/checkout_stress_threads_only.csv")
+    ap.add_argument("results_csv", nargs="?", default="results/checkout_stress_quickcheck_90_120_150.csv")
     ap.add_argument("--error-threshold", type=float, default=0.05)
     ap.add_argument("--p95-threshold-ms", type=float, default=5000.0)
     args = ap.parse_args()
@@ -162,38 +161,43 @@ def main() -> None:
 
     print(f"Loaded {len(rows):,} rows from {path}")
     print()
-    print("=" * 128)
-    print("THREAD STAIRCASE CHECKOUT STRESS REPORT")
+    print("=" * 140)
+    print("QUICK SANITY SWEEP REPORT (90 / 120 / 150 USERS)")
     print(f"Error threshold: {args.error_threshold:.1%} | p95 threshold: {args.p95_threshold_ms:.0f} ms")
-    print("=" * 128)
-    print(f"{'Stage':<26} {'Users':>5} {'Flows':>8} {'Flow/s':>8} {'ErrRate':>8} {'Flow p50':>10} {'Flow p95':>10} {'Pay p50':>10} {'Pay p95':>10} {'Hard':>6} {'Grace':>7}")
-    print("-" * 128)
+    print("=" * 140)
+    print(f"{'Stage':<26} {'Users':>5} {'Health':>10} {'Flows':>8} {'Flow/s':>8} {'ErrRate':>8} {'Flow p50':>10} {'Flow p95':>10} {'Pay p50':>10} {'Pay p95':>10} {'Hard':>7} {'Grace':>7}")
+    print("-" * 140)
 
-    breaking = None
-    sustainable = None
+    healthy_max = None
     for s in summaries:
-        bad = s.flow_error_rate >= args.error_threshold or s.flow_p95_ms >= args.p95_threshold_ms
-        flag = "  <-- BREAK" if bad and breaking is None else ""
-        if bad and breaking is None:
-            breaking = s
-        if not bad:
-            sustainable = s
-        print(f"{s.stage:<26} {s.users:>5} {s.flows:>8,} {s.completed_flows_per_sec:>7.2f} {s.flow_error_rate:>7.1%} {s.flow_p50_ms:>9.0f}ms {s.flow_p95_ms:>9.0f}ms {s.payment_p50_ms:>9.0f}ms {s.payment_p95_ms:>9.0f}ms {s.hard_failures:>6} {s.graceful_failures:>7}{flag}")
+        health = health_label(s, args.error_threshold, args.p95_threshold_ms)
+        if health == "HEALTHY":
+            healthy_max = s
+        print(f"{s.stage:<26} {s.users:>5} {health:>10} {s.flows:>8,} {s.completed_flows_per_sec:>7.2f} {s.flow_error_rate:>7.1%} {s.flow_p50_ms:>9.0f}ms {s.flow_p95_ms:>9.0f}ms {s.payment_p50_ms:>9.0f}ms {s.payment_p95_ms:>9.0f}ms {s.hard_failures:>7} {s.graceful_failures:>7}")
 
-    print("=" * 128)
-    if sustainable:
-        print(f"Max sustainable stage: {sustainable.stage} ({sustainable.users} users, {sustainable.flow_error_rate:.1%} errors, flow p95 {sustainable.flow_p95_ms:.0f} ms)")
+    print("=" * 140)
+    if healthy_max:
+        print(f"Highest healthy stage: {healthy_max.stage} ({healthy_max.users} users)")
     else:
-        print("Max sustainable stage: none")
+        print("Highest healthy stage: none")
 
-    if breaking:
-        print(f"Breaking point: {breaking.stage} ({breaking.users} users)")
-        print(f"Failure mode: {breaking.hard_failures} hard failures, {breaking.graceful_failures} graceful failures")
+    broken = [s for s in summaries if health_label(s, args.error_threshold, args.p95_threshold_ms) == "BROKEN"]
+    degraded = [s for s in summaries if health_label(s, args.error_threshold, args.p95_threshold_ms) == "DEGRADED"]
+
+    if broken:
+        first = broken[0]
+        print(f"First broken stage: {first.stage} ({first.users} users) with {first.flow_error_rate:.1%} flow errors")
     else:
-        print("Breaking point: not reached")
+        print("First broken stage: none")
+
+    if degraded:
+        first = degraded[0]
+        print(f"First degraded stage: {first.stage} ({first.users} users) with flow p95 {first.flow_p95_ms:.0f} ms")
+    else:
+        print("First degraded stage: none")
 
     print()
-    print("Degradation trend (payment p95):")
+    print("Payment p95 trend:")
     for s in summaries:
         bars = "#" * min(int(s.payment_p95_ms / 100), 60)
         print(f"  {s.stage:<26} {bars:<60} {s.payment_p95_ms:>7.0f} ms")
